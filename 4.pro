@@ -1,5 +1,75 @@
 #! /usr/bin/prolog -s !#
 
+
+%%===============================================================
+
+z(Res) :- cfg_phrase(Res, [sasha, like, apple, not_like, juice]).
+
+% cfg == context-free grammar
+
+cfg_name(sasha).
+cfg_name(petia).
+cfg_object(apple).
+cfg_object(juice).
+
+cfg_object_group(none, []).
+
+cfg_object_group(Res, [Obj|Rest]) :-
+	cfg_object(Obj),
+	cfg_object_group(Res2, Rest),
+	(Res = Obj;
+	 Res = Res2),
+	Res \= none.
+
+cfg_like_group(none, []).
+
+cfg_like_group(Res, Str) :-
+	(Do = like; Do = not_like),
+	append([Do|What], Rest, Str),
+	cfg_object_group(Obj, What),
+	cfg_like_group(Res2, Rest),
+	(Res = [[], Do, Obj];
+	 Res = Res2),
+	Res \= none.
+
+
+cfg_phrase(Res, [Name|Rest]) :-
+	cfg_name(Name),
+	cfg_like_group([_,Like,What], Rest),
+	Res = [Name, Like, What].
+
+%%======================================================
+
+
+% debug:
+
+stuff(_).
+
+just_phrase(none, []).
+
+just_phrase(Res, Str) :-
+	append([Name | _], Rest, Str),
+%	print(Name),
+%	print('\n'),
+	cfg_name(Name),
+	just_phrase(Res2,Rest),
+	
+	(Res = [Name, like, what];
+	 Res = Res2).
+
+
+
+t(Res) :-
+	cfg_name(Answ),
+	(Res = [Answ, like, what];
+	 Res = [qq, ww, ee]).
+
+
+
+
+%%======================================================
+
+
 % f(X, Y) :- simplity(X,Y).
 
 simplity(X,X) :- atomic(X).
@@ -46,7 +116,7 @@ a_term(V,T) :- append(X, ['/'|Y],T),
 	a_term(Vy,Y),
 	V is Vy/Vx.
 
-%Правило:
+%пїЅпїЅпїЅпїЅпїЅпїЅпїЅ:
 a_expr(V,T) :- a_term(V,T).
 a_expr(V,T) :- append(X,['+'|Y],T),
 	a_term(Vx, X),
